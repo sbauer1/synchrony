@@ -280,9 +280,9 @@ public class StartupFrame extends javax.swing.JFrame {
     // add
     private void jButton3ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
        
-        String active = "yes";
-        String status = "synchronized";
-        String name = "theName";
+        String active = "...";
+        String status = "...";
+        String name = "...";
         String path = pathTextField.getText();
 
         if(path.equals("")){
@@ -308,6 +308,7 @@ public class StartupFrame extends javax.swing.JFrame {
 			model.setValueAt(name, count, 2);
 			model.setValueAt(path, count, 3);
 
+                        pathTextField.setText("");
 
         }
         else if (n == JOptionPane.NO_OPTION) {
