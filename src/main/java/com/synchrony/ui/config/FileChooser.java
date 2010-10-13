@@ -1,6 +1,9 @@
 package com.synchrony.ui.config;
 
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.File;
+import java.net.URL;
 import javax.swing.JFileChooser;
 
 /**
@@ -11,12 +14,11 @@ import javax.swing.JFileChooser;
 public class FileChooser extends javax.swing.JDialog {
 
     private StartupFrame startupFrame;
-    String identifier;
 
-    public FileChooser(java.awt.Frame parent, boolean modal, StartupFrame startupFrame, String identifier) {
+    public FileChooser(java.awt.Frame parent, boolean modal, StartupFrame startupFrame) {
         super(parent, modal);
         this.startupFrame = startupFrame;
-        this.identifier = identifier;
+       
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         initComponents();
     }
@@ -25,7 +27,7 @@ public class FileChooser extends javax.swing.JDialog {
     private void initComponents() {
         File defaultDir = null;
 
-        String title = null;
+        String title = "Choose a Folder";
         SecurityManager sm = null;
         JFileChooser chooser = null;
         File choice = null;
@@ -64,13 +66,8 @@ public class FileChooser extends javax.swing.JDialog {
         System.setSecurityManager(sm);
 
         //Auswahl im Textfeld setzen
-        System.out.println(identifier);
-//        if (identifier.equals("jbutton2")) {
-//            startupFrame.getjTextField3().setText(choice.toString());
-//        }
-        if (identifier.equals("jbutton5")) {
-            startupFrame.getPathTextField().setText(choice.toString());
-        }
-        System.out.println(choice);
+        startupFrame.getPathTextField().setText(choice.toString());
+        
+       
     }
 }

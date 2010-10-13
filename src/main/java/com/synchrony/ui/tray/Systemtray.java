@@ -30,7 +30,7 @@ public class Systemtray {
             SystemTray tray = SystemTray.getSystemTray();
 
             // das Logo von Synchrony
-            Image image = Toolkit.getDefaultToolkit().getImage("synchrony-logo.gif");
+            Image image = Toolkit.getDefaultToolkit().getImage("synchrony-logo.png");
 
             // MouseListener
             TrayMouseListener mouseListener = new TrayMouseListener(this);
