@@ -285,6 +285,9 @@ public class StartupFrame extends javax.swing.JFrame {
         String name = "theName";
         String path = pathTextField.getText();
 
+        if(path.equals("")){
+            JOptionPane.showMessageDialog(this,"no path choosen!");
+        }else{
 
 	String[] yesNoOptions = { "yes", "cancel" };
 	int n = JOptionPane.showOptionDialog(this,
@@ -311,6 +314,7 @@ public class StartupFrame extends javax.swing.JFrame {
 				show(isEnabled());
 			} else if (n == JOptionPane.CANCEL_OPTION)
 				;
+        }
     }//GEN-LAST:event_jButton3ActionPerformed
 
     // remove
