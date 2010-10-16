@@ -68,11 +68,11 @@ public class Config {
 
     private URI uri;
 
-    private Config() {
+    public Config() {
         multicastport = 0;
         unicastport = 0;
         heartbeat = 0;
-        watchers = null;
+        watchers = new ArrayList<>();
     }
 
     private Config(String multicastAddress, int multicastport, int unicastport, int heartbeat) {
@@ -81,6 +81,7 @@ public class Config {
         this.unicastport = unicastport;
         this.heartbeat = heartbeat;
         this.watchers = new ArrayList<>();
+     
     }
 
 

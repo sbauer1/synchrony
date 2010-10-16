@@ -1,5 +1,7 @@
 package com.synchrony.ui.config;
 
+import com.synchrony.config.Config;
+import com.synchrony.config.Config.Watcher;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
@@ -22,6 +24,10 @@ import javax.swing.table.DefaultTableModel;
 import java.net.URL;
 import java.util.Vector;
 import javax.swing.JOptionPane;
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 
 /*
@@ -34,7 +40,6 @@ import javax.swing.JOptionPane;
  *
  * Created on 10.10.2010, 21:16:19
  */
-
 /**
  *
  * @author Simon
@@ -44,11 +49,11 @@ public class StartupFrame extends javax.swing.JFrame {
     /** Creates new form StartupFrame */
     public StartupFrame() {
 
-       URL urlLogo = getClass().getResource("synchrony-logo.png");
-       Image logo = Toolkit.getDefaultToolkit().getImage(urlLogo);
-       setIconImage(logo);
-
-       initComponents();
+        URL urlLogo = getClass().getResource("synchrony-logo.png");
+        Image logo = Toolkit.getDefaultToolkit().getImage(urlLogo);
+        setIconImage(logo);
+        initComponents();
+        fillUpTable();
     }
 
     /** This method is called from within the constructor to
@@ -279,115 +284,164 @@ public class StartupFrame extends javax.swing.JFrame {
 
     // add
     private void jButton3ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-       
-        String active = "...";
+
+        boolean enabled = false;
         String status = "...";
         String name = "...";
         String path = pathTextField.getText();
 
-        if(path.equals("")){
-            JOptionPane.showMessageDialog(this,"no path choosen!");
-        }else{
 
-	String[] yesNoOptions = { "yes", "cancel" };
-	int n = JOptionPane.showOptionDialog(this,
-					"add this folder?",// question
-					"add folder", // title
-					JOptionPane.YES_NO_CANCEL_OPTION,
-					JOptionPane.QUESTION_MESSAGE, // icon
-					null, yesNoOptions, yesNoOptions[0]);
+        if (path.equals("")) {
+            JOptionPane.showMessageDialog(this, "no path choosen!");
+        } else {
 
-	if (n == JOptionPane.YES_OPTION) {
-            DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
-            Vector newDatas = createDataVector(active, status, name,
-					path);
-			int count = model.getRowCount();
-			model.addRow(newDatas);
-			model.setValueAt(active, count, 0);
-			model.setValueAt(status, count, 1);
-			model.setValueAt(name, count, 2);
-			model.setValueAt(path, count, 3);
+            String[] yesNoOptions = {"yes", "cancel"};
+            int n = JOptionPane.showOptionDialog(this,
+                    "add this folder?",// question
+                    "add folder", // title
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE, // icon
+                    null, yesNoOptions, yesNoOptions[0]);
 
-                        pathTextField.setText("");
+            if (n == JOptionPane.YES_OPTION) {
 
-        }
-        else if (n == JOptionPane.NO_OPTION) {
-				show(isEnabled());
-			} else if (n == JOptionPane.CANCEL_OPTION)
-				;
+
+
+                File file = new File("C:\\Users\\Simon\\.synchrony\\config.xml");
+
+                Config config = null;
+                try {
+                    config = Config.read(file.toURI());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                Watcher watcher = new Watcher();
+                watcher.name = name;
+                watcher.enabled = true;
+                watcher.path = path;
+                config.watchers.add(watcher);
+
+                try {
+                    config.save(file.toURI());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                fillUpTable();
+
+                pathTextField.setText("");
+
+
+            } else if (n == JOptionPane.NO_OPTION) {
+                show(isEnabled());
+            } else if (n == JOptionPane.CANCEL_OPTION);
         }
     }//GEN-LAST:event_jButton3ActionPerformed
 
     // remove
     private void jButton4ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-       
-        String[] yesNoOptions = { "yes", "cancel" };
-	int n = JOptionPane.showOptionDialog(this,
-					"remove this folder?",// question
-					"remove folder", // title
-					JOptionPane.YES_NO_CANCEL_OPTION,
-					JOptionPane.QUESTION_MESSAGE, // icon
-					null, yesNoOptions, yesNoOptions[0]);
 
-	if (n == JOptionPane.YES_OPTION) {
-               DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
-               int selectedRow = jTable1.getSelectedRow();
-            
-               if(selectedRow == -1){
-                JOptionPane.showMessageDialog(this,"no row selected!");
-                }else{
-                    model.removeRow(selectedRow);
+        String[] yesNoOptions = {"yes", "cancel"};
+        int n = JOptionPane.showOptionDialog(this,
+                "remove this folder?",// question
+                "remove folder", // title
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, // icon
+                null, yesNoOptions, yesNoOptions[0]);
+
+        if (n == JOptionPane.YES_OPTION) {
+
+            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+            int selectedRow = jTable1.getSelectedRow();
+
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "no row selected!");
+            } else {
+
+
+
+                File file = new File("C:\\Users\\Simon\\.synchrony\\config.xml");
+
+                Config config = null;
+                try {
+                    config = Config.read(file.toURI());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
-        }
-        else if (n == JOptionPane.NO_OPTION) {
-				show(isEnabled());
-			} else if (n == JOptionPane.CANCEL_OPTION)
-				;
-      
+
+                String path = model.getValueAt(selectedRow, 3).toString();
+                Iterator ite = config.watchers.iterator();
+                int i = 0;
+
+                while (ite.hasNext()) {
+
+                    Watcher watcher = config.watchers.get(i);
+
+                    if (watcher.path.equals(path)) {
+                        config.watchers.remove(watcher);
+                        break;
+                    } else {
+                        i++;
+                        ite.next();
+                    }
+                }
+
+                try {
+                    config.save(file.toURI());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                fillUpTable();
+
+            }
+        } else if (n == JOptionPane.NO_OPTION) {
+            show(isEnabled());
+        } else if (n == JOptionPane.CANCEL_OPTION);
+
     }//GEN-LAST:event_jButton4ActionPerformed
 
     // edit
     private void jButton1ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        
-        String[] yesNoOptions = { "yes", "cancel" };
-	int n = JOptionPane.showOptionDialog(this,
-					"edit this folder?",// question
-					"edit folder", // title
-					JOptionPane.YES_NO_CANCEL_OPTION,
-					JOptionPane.QUESTION_MESSAGE, // icon
-					null, yesNoOptions, yesNoOptions[0]);
 
-	if (n == JOptionPane.YES_OPTION) {
-               DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
-               int selectedRow = jTable1.getSelectedRow();
+        String[] yesNoOptions = {"yes", "cancel"};
+        int n = JOptionPane.showOptionDialog(this,
+                "edit this folder?",// question
+                "edit folder", // title
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, // icon
+                null, yesNoOptions, yesNoOptions[0]);
 
-               if(selectedRow == -1){
-                JOptionPane.showMessageDialog(this,"no row selected!");
-                }else{
-                    String active = jTable1.getValueAt(selectedRow, 0).toString();
-                    String status = jTable1.getValueAt(selectedRow, 1).toString();
-                    String name = jTable1.getValueAt(selectedRow, 2).toString();
-                    String path = pathTextField.getText();
+        if (n == JOptionPane.YES_OPTION) {
+            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+            int selectedRow = jTable1.getSelectedRow();
 
-                    model.setValueAt(active, selectedRow, 0);
-                    model.setValueAt(status, selectedRow, 1);
-                    model.setValueAt(name, selectedRow, 2);
-                    model.setValueAt(path, selectedRow, 3);
-                }
-        }
-        else if (n == JOptionPane.NO_OPTION) {
-				show(isEnabled());
-			} else if (n == JOptionPane.CANCEL_OPTION)
-				;
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "no row selected!");
+            } else {
+                String active = jTable1.getValueAt(selectedRow, 0).toString();
+                String status = jTable1.getValueAt(selectedRow, 1).toString();
+                String name = jTable1.getValueAt(selectedRow, 2).toString();
+                String path = pathTextField.getText();
+
+                model.setValueAt(active, selectedRow, 0);
+                model.setValueAt(status, selectedRow, 1);
+                model.setValueAt(name, selectedRow, 2);
+                model.setValueAt(path, selectedRow, 3);
+            }
+        } else if (n == JOptionPane.NO_OPTION) {
+            show(isEnabled());
+        } else if (n == JOptionPane.CANCEL_OPTION);
 
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new StartupFrame().setVisible(true);
             }
@@ -398,17 +452,65 @@ public class StartupFrame extends javax.swing.JFrame {
         return pathTextField;
     }
 
-    public static Vector createDataVector(String active, String status, String name,
-			String path) {
-		Vector vector = new Vector();
-		for (int i = 0; i < 2; i++)
-			vector.add(0);
-		return vector;
-	}
-
+    public static Vector createDataVector(boolean enabled, String status, String name,
+            String path) {
+        Vector vector = new Vector();
+        for (int i = 0; i < 2; i++) {
+            vector.add(0);
+        }
+        return vector;
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     JTable jTable1;
     JTextField pathTextField;
     // End of variables declaration//GEN-END:variables
 
+    private void fillUpTable() {
+
+
+        File file = new File("C:\\Users\\Simon\\.synchrony\\config.xml");
+        Config config = null;
+        try {
+            config = Config.read(file.toURI());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        if (config.watchers != null) {
+
+            List<Watcher> list = config.watchers;
+            Iterator ite = list.iterator();
+            int i = 0;
+
+            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+            if (model.getRowCount() != 0) {
+               
+                for (int c = jTable1.getRowCount() - 1; c >= 0; c--) {
+                    model.removeRow(c);
+                }
+
+            }
+
+            while (ite.hasNext()) {
+
+                Watcher watcher = list.get(i);
+                boolean enabled = watcher.enabled;
+                String name = watcher.name;
+                String path = watcher.path;
+                String status = "teststatus";
+
+
+
+                Vector newDatas = createDataVector(enabled, status, name,
+                        path);
+                int count = model.getRowCount();
+                model.addRow(newDatas);
+                model.setValueAt(enabled, count, 0);
+                model.setValueAt(status, count, 1);
+                model.setValueAt(name, count, 2);
+                model.setValueAt(path, count, 3);
+                i++;
+                ite.next();
+            }
+        }
+    }
 }
