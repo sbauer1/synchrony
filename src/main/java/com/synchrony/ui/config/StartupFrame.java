@@ -305,8 +305,6 @@ public class StartupFrame extends javax.swing.JFrame {
 
             if (n == JOptionPane.YES_OPTION) {
 
-
-
                 File file = new File("C:\\Users\\Simon\\.synchrony\\config.xml");
 
                 Config config = null;
@@ -316,22 +314,44 @@ public class StartupFrame extends javax.swing.JFrame {
                     ex.printStackTrace();
                 }
 
-                Watcher watcher = new Watcher();
-                watcher.name = name;
-                watcher.enabled = true;
-                watcher.path = path;
-                config.watchers.add(watcher);
 
-                try {
-                    config.save(file.toURI());
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                Iterator ite = config.watchers.iterator();
+                int i = 0;
+
+                boolean existence = false;
+                while (ite.hasNext()) {
+
+                    Watcher watcher = config.watchers.get(i);
+
+                    if (watcher.path.equals(path)) {
+
+                        JOptionPane.showMessageDialog(this, "path already exists");
+                        pathTextField.setText("");
+                        existence = true;
+                        break;
+                    } else {
+                        i++;
+                        ite.next();
+                    }
                 }
-                fillUpTable();
 
-                pathTextField.setText("");
+                if (existence == false) {
+                    Watcher watcher = new Watcher();
+                    watcher.name = name;
+                    watcher.enabled = true;
+                    watcher.path = path;
+                    config.watchers.add(watcher);
 
+                    try {
+                        config.save(file.toURI());
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    fillUpTable();
 
+                    pathTextField.setText("");
+
+                }
             } else if (n == JOptionPane.NO_OPTION) {
                 show(isEnabled());
             } else if (n == JOptionPane.CANCEL_OPTION);
@@ -357,8 +377,6 @@ public class StartupFrame extends javax.swing.JFrame {
             if (selectedRow == -1) {
                 JOptionPane.showMessageDialog(this, "no row selected!");
             } else {
-
-
 
                 File file = new File("C:\\Users\\Simon\\.synchrony\\config.xml");
 
@@ -419,15 +437,53 @@ public class StartupFrame extends javax.swing.JFrame {
             if (selectedRow == -1) {
                 JOptionPane.showMessageDialog(this, "no row selected!");
             } else {
-                String active = jTable1.getValueAt(selectedRow, 0).toString();
+                String enabled = jTable1.getValueAt(selectedRow, 0).toString();
                 String status = jTable1.getValueAt(selectedRow, 1).toString();
                 String name = jTable1.getValueAt(selectedRow, 2).toString();
+                String oldPath = jTable1.getValueAt(selectedRow, 3).toString();
                 String path = pathTextField.getText();
 
-                model.setValueAt(active, selectedRow, 0);
-                model.setValueAt(status, selectedRow, 1);
-                model.setValueAt(name, selectedRow, 2);
-                model.setValueAt(path, selectedRow, 3);
+                 File file = new File("C:\\Users\\Simon\\.synchrony\\config.xml");
+
+                Config config = null;
+                try {
+                    config = Config.read(file.toURI());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                Iterator ite = config.watchers.iterator();
+                int i = 0;
+
+                while (ite.hasNext()) {
+
+                    Watcher watcher = config.watchers.get(i);
+
+                    if (watcher.path.equals(oldPath)) {
+                       
+                        config.watchers.get(i).path = path;
+                        config.watchers.get(i).name = name;
+
+                        if(enabled.equals("true")){
+                        config.watchers.get(i).enabled = true;
+                        }else{
+                            config.watchers.get(i).enabled = false;
+                        }
+                       
+                        break;
+                    } else {
+                        i++;
+                        ite.next();
+                    }
+                }
+
+                 try {
+                    config.save(file.toURI());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                fillUpTable();
             }
         } else if (n == JOptionPane.NO_OPTION) {
             show(isEnabled());
@@ -483,7 +539,7 @@ public class StartupFrame extends javax.swing.JFrame {
 
             DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
             if (model.getRowCount() != 0) {
-               
+
                 for (int c = jTable1.getRowCount() - 1; c >= 0; c--) {
                     model.removeRow(c);
                 }
